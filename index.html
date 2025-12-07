@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ne">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RUJU | Verifying the Truth</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Mukta:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            ruju: {
+              blue: '#000000', // Remap blue to Black to enforce strict palette
+              dark: '#000000', // Complete Black
+              red: '#ae2518', // Nepali Red (Accent)
+              light: '#ffffff', // Pure White
+              accent: '#ae2518'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'Mukta', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #ffffff;
+      color: #000000;
+      /* Default text color Complete Black */
+    }
+
+    input,
+    textarea {
+      background-color: #ffffff !important;
+      color: #000000 !important;
+    }
+
+    ::placeholder {
+      color: rgba(0, 0, 0, 0.4) !important;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+
+</html>

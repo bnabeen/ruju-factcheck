@@ -1,0 +1,5 @@
+{
+  "name": "RUJU - Fact Checking Platform",
+  "description": "A modern, AI-powered fact-checking website inspired by Nepali media aesthetics. Features instant claim verification and media analysis using Gemini.",
+  "requestFramePermissions": []
+}
