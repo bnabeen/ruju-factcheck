@@ -136,7 +136,7 @@ const Home: React.FC<HomeProps> = ({ lang }) => {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {articles.map(article => (
-            <Link to={`/article/${article.id}`} key={article.id} className="group block bg-white rounded-xl overflow-hidden border border-black/10 hover:shadow-xl hover:border-black/20 transition-all duration-300 hover:-translate-y-1">
+            <Link to={`/article/${article.slug}`} key={article.id} className="group block bg-white rounded-xl overflow-hidden border border-black/10 hover:shadow-xl hover:border-black/20 transition-all duration-300 hover:-translate-y-1">
               <div className="relative h-52 bg-black/5 overflow-hidden">
                 <img src={article.imageUrl} alt={article.title} className="w-full h-full object-cover group-hover:scale-110 transition duration-700" />
                 <div className="absolute top-3 right-3">
@@ -151,9 +151,10 @@ const Home: React.FC<HomeProps> = ({ lang }) => {
                 <h3 className="text-lg font-bold text-black group-hover:text-ruju-red line-clamp-2 leading-snug transition">
                   {article.title}
                 </h3>
-                <p className="mt-3 text-black/70 text-sm line-clamp-3 leading-relaxed">
-                  {article.summary}
-                </p>
+                <div
+                  className="mt-3 text-black/70 text-sm line-clamp-3 leading-relaxed"
+                  dangerouslySetInnerHTML={{ __html: article.summary }}
+                />
                 <div className="mt-5 pt-4 border-t border-black/5 text-xs text-black/50 flex justify-between items-center">
                   <span className="flex items-center gap-1"><Users className="w-3 h-3" /> {article.author}</span>
                   <span>{article.date}</span>

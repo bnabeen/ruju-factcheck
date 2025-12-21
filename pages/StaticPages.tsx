@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import React, { useState } from 'react';
 import { Mail, MapPin, Phone, Shield, FileText, Users, Briefcase, Scale } from 'lucide-react';
 import { Language } from '../types';
 import { TRANSLATIONS } from '../constants';
 import { api } from '../services/api';
+import { Helmet } from 'react-helmet-async';
 
 interface PageProps {
   lang: Language;
@@ -13,6 +13,10 @@ export const About: React.FC<PageProps> = ({ lang }) => {
   const t = TRANSLATIONS[lang].about;
   return (
     <div className="max-w-3xl mx-auto px-4 py-16 bg-white">
+      <Helmet>
+        <title>{t.title} | RUJU FactCheck</title>
+        <meta name="description" content={t.lead} />
+      </Helmet>
       <h1 className="text-4xl font-bold text-black mb-8 text-center">{t.title}</h1>
       <div className="prose prose-lg max-w-none text-black">
         <p className="lead text-xl text-black font-medium border-l-4 border-ruju-red pl-4">{t.lead}</p>
@@ -40,6 +44,10 @@ export const Contact: React.FC<PageProps> = ({ lang }) => {
   const t = TRANSLATIONS[lang].contact;
   return (
     <div className="max-w-4xl mx-auto px-4 py-16 bg-white">
+      <Helmet>
+        <title>{t.title} | RUJU FactCheck</title>
+        <meta name="description" content={t.desc} />
+      </Helmet>
       <h1 className="text-4xl font-bold text-black mb-8 text-center">{t.title}</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
         <div>
@@ -159,6 +167,10 @@ export const SubmitClaim: React.FC<PageProps> = ({ lang }) => {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-12">
+      <Helmet>
+        <title>{lang === Language.EN ? 'Submit a Claim' : 'दाबी पेश गर्नुहोस्'} | RUJU FactCheck</title>
+        <meta name="description" content={lang === Language.EN ? 'Submit a claim for fact-checking.' : 'तथ्य जाँचको लागि दाबी पेश गर्नुहोस्।'} />
+      </Helmet>
       <h1 className="text-4xl font-bold text-black mb-4">
         {lang === Language.EN ? 'Submit a Claim' : 'दाबी पेश गर्नुहोस्'}
       </h1>
@@ -273,6 +285,10 @@ export const Methodology: React.FC<PageProps> = ({ lang }) => {
   const t = TRANSLATIONS[lang].methodology;
   return (
     <div className="max-w-3xl mx-auto px-4 py-16 bg-white">
+      <Helmet>
+        <title>{t.title} | RUJU FactCheck</title>
+        <meta name="description" content={t.intro} />
+      </Helmet>
       <div className="text-center mb-12">
         <div className="inline-flex items-center justify-center p-3 bg-ruju-red/10 rounded-full mb-4">
           <FileText className="h-8 w-8 text-ruju-red" />
@@ -296,6 +312,10 @@ export const Team: React.FC<PageProps> = ({ lang }) => {
   const t = TRANSLATIONS[lang].team;
   return (
     <div className="max-w-5xl mx-auto px-4 py-16 bg-white">
+      <Helmet>
+        <title>{t.title} | RUJU FactCheck</title>
+        <meta name="description" content={t.intro} />
+      </Helmet>
       <div className="text-center mb-12">
         <div className="inline-flex items-center justify-center p-3 bg-ruju-red/10 rounded-full mb-4">
           <Users className="h-8 w-8 text-ruju-red" />
@@ -323,6 +343,10 @@ export const Careers: React.FC<PageProps> = ({ lang }) => {
   const t = TRANSLATIONS[lang].careers;
   return (
     <div className="max-w-3xl mx-auto px-4 py-16 bg-white">
+      <Helmet>
+        <title>{t.title} | RUJU FactCheck</title>
+        <meta name="description" content={t.intro} />
+      </Helmet>
       <div className="text-center mb-12">
         <div className="inline-flex items-center justify-center p-3 bg-ruju-red/10 rounded-full mb-4">
           <Briefcase className="h-8 w-8 text-ruju-red" />
@@ -351,6 +375,10 @@ export const Terms: React.FC<PageProps> = ({ lang }) => {
   const t = TRANSLATIONS[lang].terms;
   return (
     <div className="max-w-3xl mx-auto px-4 py-16 bg-white">
+      <Helmet>
+        <title>{t.title} | RUJU FactCheck</title>
+        <meta name="description" content={t.intro} />
+      </Helmet>
       <div className="text-center mb-12">
         <div className="inline-flex items-center justify-center p-3 bg-ruju-red/10 rounded-full mb-4">
           <Scale className="h-8 w-8 text-ruju-red" />

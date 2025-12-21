@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { FileText, AlertCircle, Users, Mail, TrendingUp, Briefcase, Settings, Edit3, Plus } from 'lucide-react';
-import AdminLayout from '../../components/admin/AdminLayout';
 import { api } from '../../services/api';
 import StructuredArticleForm from '../../components/editor/StructuredArticleForm';
 
@@ -31,25 +30,21 @@ const Dashboard: React.FC = () => {
 
     if (loading) {
         return (
-            <AdminLayout>
-                <div className="text-center py-20">Loading...</div>
-            </AdminLayout>
+            <div className="text-center py-20">Loading...</div>
         );
     }
 
     if (error) {
         return (
-            <AdminLayout>
-                <div className="text-center py-20">
-                    <div className="text-red-600 mb-4">Error: {error}</div>
-                    <button
-                        onClick={() => window.location.reload()}
-                        className="px-4 py-2 bg-ruju-red text-white rounded hover:bg-red-700"
-                    >
-                        Retry
-                    </button>
-                </div>
-            </AdminLayout>
+            <div className="text-center py-20">
+                <div className="text-red-600 mb-4">Error: {error}</div>
+                <button
+                    onClick={() => window.location.reload()}
+                    className="px-4 py-2 bg-ruju-red text-white rounded hover:bg-red-700"
+                >
+                    Retry
+                </button>
+            </div>
         );
     }
 
@@ -90,113 +85,53 @@ const Dashboard: React.FC = () => {
     };
 
     return (
-        <AdminLayout>
-            <div>
-                <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-black">Dashboard</h1>
-                    <p className="text-gray-600 mt-2">Welcome to RUJU CMS - Manage your fact-checking platform</p>
-                </div>
-
-                {/* Editor Modal */}
-                {showEditor && (
-                    <div className="fixed inset-0 z-50 flex items-start justify-center pt-20">
-                        <div className="fixed inset-0 bg-black/40" onClick={() => setShowEditor(false)}></div>
-                        <div className="bg-white rounded-lg shadow-lg w-full max-w-4xl mx-4 z-10 p-6">
-                            <div className="flex justify-between items-center mb-4">
-                                <h3 className="text-xl font-bold">Quick Article Editor</h3>
-                                <button onClick={() => setShowEditor(false)} className="text-gray-600 hover:text-black">Close</button>
-                            </div>
-                            <StructuredArticleForm
-                                onSubmit={handleEditorSubmit}
-                                onSaveDraft={(data) => { localStorage.setItem('admin_article_draft', JSON.stringify(data)); alert('Draft saved locally'); }}
-                            />
-                        </div>
-                    </div>
-                )}
-
-                {/* Stats Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                    {statCards.map((stat, index) => {
-                        const Icon = stat.icon;
-                        return (
-                            <a
-                                key={index}
-                                href={`#${stat.link}`}
-                                className="bg-white rounded-lg shadow-md p-6 border border-gray-200 hover:shadow-lg transition group"
-                            >
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="text-gray-600 text-sm font-medium">{stat.label}</p>
-                                        <p className="text-3xl font-bold text-black mt-2 group-hover:text-ruju-red transition">{stat.value}</p>
-                                    </div>
-                                    <div className={`${stat.color} p-3 rounded-lg group-hover:scale-110 transition`}>
-                                        <Icon className="text-white" size={24} />
-                                    </div>
-                                </div>
-                            </a>
-                        );
-                    })}
-                </div>
-
-                {/* Quick Actions */}
-                <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200 mb-8">
-                    <h2 className="text-xl font-bold text-black mb-4">Quick Actions</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {quickActions.map((action, index) => {
-                            const Icon = action.icon;
-                            return (
-                                <a
-                                    key={index}
-                                    href={action.href}
-                                    onClick={(e) => { if ((action as any).onClick) { e.preventDefault(); (action as any).onClick(); } }}
-                                    className="block p-4 border-2 border-gray-200 rounded-lg hover:border-ruju-red transition group"
-                                >
-                                    <Icon className={`mx-auto mb-2 ${action.color} group-hover:scale-110 transition`} size={32} />
-                                    <p className="font-bold text-center text-black">{action.label}</p>
-                                    <p className="text-sm text-gray-500 text-center mt-1">{action.desc}</p>
-                                </a>
-                            );
-                        })}
-                    </div>
-                </div>
-
-                {/* Recent Activity / System Info */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div className="bg-gradient-to-br from-ruju-red to-black text-white rounded-lg shadow-md p-6">
-                        <h3 className="text-lg font-bold mb-2">🚀 New CMS Features</h3>
-                        <ul className="space-y-2 text-sm">
-                            <li>✅ Rich Text Editor with Tiptap</li>
-                            <li>✅ Bilingual Content Support (EN/NP)</li>
-                            <li>✅ File Upload System</li>
-                            <li>✅ Dynamic Site Settings</li>
-                            <li>✅ Structured Fact-Check Format</li>
-                        </ul>
-                    </div>
-
-                    <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
-                        <h3 className="text-lg font-bold mb-3">📊 System Overview</h3>
-                        <div className="space-y-2 text-sm">
-                            <div className="flex justify-between">
-                                <span className="text-gray-600">Total Content:</span>
-                                <span className="font-bold">{(stats?.totalArticles || 0)} articles</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span className="text-gray-600">Pending Review:</span>
-                                <span className="font-bold text-yellow-600">{(stats?.pendingClaims || 0)} claims</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span className="text-gray-600">Subscribers:</span>
-                                <span className="font-bold text-green-600">{(stats?.newsletterSubscribers || 0)} emails</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span className="text-gray-600">Team Members:</span>
-                                <span className="font-bold">{(stats?.totalUsers || 0)} users</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+        <div>
+            <div className="mb-8">
+                <h1 className="text-3xl font-bold text-black">Dashboard</h1>
+                <p className="text-gray-600 mt-2">Welcome to RUJU CMS - Manage your fact-checking platform</p>
             </div>
-        </AdminLayout>
+
+            {/* Editor Modal */}
+            {showEditor && (
+                <div className="fixed inset-0 z-50 flex items-start justify-center pt-20">
+                    <div className="fixed inset-0 bg-black/40" onClick={() => setShowEditor(false)}></div>
+                    <div className="bg-white rounded-lg shadow-lg w-full max-w-4xl mx-4 z-10 p-6">
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-xl font-bold">Quick Article Editor</h3>
+                            <button onClick={() => setShowEditor(false)} className="text-gray-600 hover:text-black">Close</button>
+                        </div>
+                        <StructuredArticleForm
+                            onSubmit={handleEditorSubmit}
+                            onSaveDraft={(data) => { localStorage.setItem('admin_article_draft', JSON.stringify(data)); alert('Draft saved locally'); }}
+                        />
+                    </div>
+                </div>
+            )}
+
+            {/* Stats Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                {statCards.map((stat, index) => {
+                    const Icon = stat.icon;
+                    return (
+                        <a
+                            key={index}
+                            href={`#${stat.link}`}
+                            className="bg-white rounded-lg shadow-md p-6 border border-gray-200 hover:shadow-lg transition group"
+                        >
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-gray-600 text-sm font-medium">{stat.label}</p>
+                                    <p className="text-3xl font-bold text-black mt-2 group-hover:text-ruju-red transition">{stat.value}</p>
+                                </div>
+                                <div className={`${stat.color} p-3 rounded-lg group-hover:scale-110 transition`}>
+                                    <Icon className="text-white" size={24} />
+                                </div>
+                            </div>
+                        </a>
+                    );
+                })}
+            </div>
+        </div>
     );
 };
 

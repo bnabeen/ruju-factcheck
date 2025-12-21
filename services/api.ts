@@ -59,7 +59,10 @@ export const api = {
             headers: authHeaders(),
             body: JSON.stringify(article),
         });
-        if (!res.ok) throw new Error('Failed to create article');
+        if (!res.ok) {
+            const errorData = await res.json().catch(() => ({}));
+            throw new Error(errorData.error || 'Failed to create article');
+        }
         return res.json();
     },
 
@@ -69,7 +72,10 @@ export const api = {
             headers: authHeaders(),
             body: JSON.stringify(article),
         });
-        if (!res.ok) throw new Error('Failed to update article');
+        if (!res.ok) {
+            const errorData = await res.json().catch(() => ({}));
+            throw new Error(errorData.error || 'Failed to update article');
+        }
         return res.json();
     },
 

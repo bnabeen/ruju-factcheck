@@ -75,7 +75,7 @@ const Feed: React.FC<FeedProps> = ({ lang }) => {
         {loading ? (
           <div className="col-span-full text-center py-20 text-black/50">Loading articles...</div>
         ) : filteredArticles.map(article => (
-          <Link to={`/article/${article.id}`} key={article.id} className="bg-white rounded-lg overflow-hidden shadow-sm border border-black/10 hover:shadow-xl hover:border-black/30 transition group flex flex-col">
+          <Link to={`/article/${article.slug}`} key={article.id} className="bg-white rounded-lg overflow-hidden shadow-sm border border-black/10 hover:shadow-xl hover:border-black/30 transition group flex flex-col">
             <div className="relative h-56 bg-black/5 overflow-hidden">
               <img src={article.imageUrl} alt={article.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-700" />
               <div className="absolute top-3 right-3">
@@ -88,7 +88,10 @@ const Feed: React.FC<FeedProps> = ({ lang }) => {
                 <span className="text-xs text-black/50">{article.date}</span>
               </div>
               <h3 className="text-xl font-bold text-black mb-3 group-hover:text-ruju-red transition">{article.title}</h3>
-              <p className="text-black/70 text-sm flex-grow">{article.summary}</p>
+              <div
+                className="text-black/70 text-sm flex-grow line-clamp-3"
+                dangerouslySetInnerHTML={{ __html: article.summary }}
+              />
               <div className="mt-6 pt-4 border-t border-black/5 text-sm text-black/50">
                 {t.checked_by} <span className="font-bold text-black">{article.author}</span>
               </div>

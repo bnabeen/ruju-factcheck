@@ -117,13 +117,16 @@ const VerifyMedia: React.FC<VerifyMediaProps> = ({ lang = Language.EN }) => {
               <div className="p-6">
                 <div className="mb-6">
                   <h4 className="text-sm font-bold text-ruju-red uppercase tracking-wide mb-2">{t.summary}</h4>
-                  <p className="text-black font-medium">{result.summary}</p>
+                  <div className="text-black font-medium" dangerouslySetInnerHTML={{ __html: result.summary }} />
                 </div>
                 <div className="bg-white p-4 rounded-lg border border-black/10 mb-6">
                   <h4 className="text-sm font-bold text-black mb-1 flex items-center gap-2">
                     <FileText className="h-4 w-4" /> {t.findings}
                   </h4>
-                  <p className="text-sm text-black whitespace-pre-wrap leading-relaxed">{result.reasoning}</p>
+                  <div
+                    className="text-sm text-black whitespace-pre-wrap leading-relaxed"
+                    dangerouslySetInnerHTML={{ __html: result.reasoning }}
+                  />
                 </div>
                 <div className="flex items-center gap-2 p-3 bg-white text-ruju-red rounded text-sm border border-ruju-red">
                   <AlertTriangle className="h-4 w-4 flex-shrink-0" />

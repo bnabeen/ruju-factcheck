@@ -1,17 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { TRANSLATIONS } from '../constants';
-import VerdictBadge from '../components/VerdictBadge';
-import { Share2, Calendar, User, ArrowLeft, FileText, ArrowRight, Quote } from 'lucide-react';
 import { Language, VerdictType, FactCheckArticle } from '../types';
 import { api } from '../services/api';
+import React, { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
+import DOMPurify from 'dompurify';
+import { useParams, Link } from 'react-router-dom';
+import { TRANSLATIONS } from '../constants';
+import { ArrowLeft, Calendar, User, Quote, FileText, Share2, ArrowRight } from 'lucide-react';
+import VerdictBadge from '../components/VerdictBadge';
 
 interface ArticleProps {
   lang: Language;
 }
 
 const Article: React.FC<ArticleProps> = ({ lang }) => {
-  const { id } = useParams();
+  const { slug } = useParams();
   const t = TRANSLATIONS[lang].article;
   const [article, setArticle] = useState<FactCheckArticle | null>(null);
   const [relatedArticles, setRelatedArticles] = useState<FactCheckArticle[]>([]);
@@ -21,15 +23,15 @@ const Article: React.FC<ArticleProps> = ({ lang }) => {
 
   useEffect(() => {
     const fetchArticle = async () => {
-      if (!id) return;
+      if (!slug) return;
       try {
         setLoading(true);
-        const data = await api.getArticleById(id, lang);
+        const data = await api.getArticleById(slug, lang);
         setArticle(data);
 
         // Fetch related articles (just latest for now)
         const related = await api.getArticles(lang, 3);
-        setRelatedArticles(related.filter(a => a.id !== id));
+        setRelatedArticles(related.filter(a => a.slug !== slug));
       } catch (error) {
         console.error('Failed to load article', error);
       } finally {
@@ -37,7 +39,7 @@ const Article: React.FC<ArticleProps> = ({ lang }) => {
       }
     };
     fetchArticle();
-  }, [id, lang]);
+  }, [slug, lang]);
 
   const handleSubscribe = async () => {
     if (!email) return;
@@ -65,8 +67,23 @@ const Article: React.FC<ArticleProps> = ({ lang }) => {
   // Helper for status text
   const statusText = article.verdict === VerdictType.TRUE ? t.status_accurate : t.status_inaccurate;
 
+  const stripHtml = (html: string) => {
+    const tmp = document.createElement("DIV");
+    tmp.innerHTML = html;
+    return tmp.textContent || tmp.innerText || "";
+  };
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-10 sm:px-6 bg-white">
+      <Helmet>
+        <title>{article.title} | RUJU FactCheck</title>
+        <meta name="description" content={stripHtml(article.summary)} />
+        <link rel="canonical" href={window.location.origin + `/article/${article.slug}`} />
+        <meta property="og:title" content={article.title} />
+        <meta property="og:description" content={stripHtml(article.summary)} />
+        <meta property="og:image" content={article.imageUrl} />
+        <meta property="og:type" content="article" />
+      </Helmet>
       <Link to="/feed" className="inline-flex items-center text-black/60 hover:text-ruju-red mb-8 transition font-medium group">
         <ArrowLeft className="h-4 w-4 mr-1 group-hover:-translate-x-1 transition-transform" /> {t.back}
       </Link>
@@ -124,9 +141,12 @@ const Article: React.FC<ArticleProps> = ({ lang }) => {
               <FileText className="h-6 w-6" /> {t.facts_title}
             </h3>
             <div className="space-y-6 text-black leading-relaxed">
-              <p>{article.summary}</p>
-              <p>{t.investigation} {statusText}</p>
-              <p>{t.consultation}</p>
+              {article.summary && (
+                <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(article.summary) }} />
+              )}
+              {article.content && (
+                <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(article.content) }} />
+              )}
             </div>
           </div>
 
@@ -146,7 +166,7 @@ const Article: React.FC<ArticleProps> = ({ lang }) => {
               <h3 className="font-bold text-black text-lg mb-5 pb-2 border-b border-black/10">Related Fact Checks</h3>
               <div className="flex flex-col gap-6">
                 {relatedArticles.map(rel => (
-                  <Link to={`/article/${rel.id}`} key={rel.id} className="group block">
+                  <Link to={`/article/${rel.slug}`} key={rel.id} className="group block">
                     <div className="relative h-36 w-full rounded-lg overflow-hidden mb-3 shadow-sm border border-black/5">
                       <img src={rel.imageUrl} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" alt={rel.title} />
                       <div className="absolute top-2 right-2">

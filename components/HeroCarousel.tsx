@@ -59,7 +59,7 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({ lang }) => {
                 >
                     {articles.map((article) => (
                         <div key={article.id} className="w-full flex-shrink-0">
-                            <Link to={`/article/${article.id}`} className="flex flex-col md:flex-row h-full md:h-48 group/card">
+                            <Link to={`/article/${article.slug}`} className="flex flex-col md:flex-row h-full md:h-48 group/card">
                                 {/* Image Side */}
                                 <div className="w-full md:w-1/3 relative overflow-hidden">
                                     <img
@@ -86,9 +86,10 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({ lang }) => {
                                         {article.title}
                                     </h3>
 
-                                    <p className="text-black/60 text-sm line-clamp-2 mb-3">
-                                        {article.summary}
-                                    </p>
+                                    <div
+                                        className="text-black/60 text-sm line-clamp-2 mb-3"
+                                        dangerouslySetInnerHTML={{ __html: article.summary }}
+                                    />
 
                                     <div className="flex items-center gap-2 text-xs text-black/40 font-medium">
                                         <span>{article.date}</span>

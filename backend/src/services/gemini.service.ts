@@ -272,7 +272,7 @@ FORMATTING RULES:
         }
 
         try {
-            const model = 'gemini-2.0-flash';
+            const model = 'gemini-2.5-flash';
             const prompt = `
             You are RUJU, an expert fact-checking AI assistant.
             Generate comprehensive content in NEPALI language for the following claim: "${claim}".
@@ -300,7 +300,8 @@ FORMATTING RULES:
             - Style: Concise, bullet points, visual-ready text.
             - Key points only.
 
-            OUTPUT FORMAT (JSON ONLY):
+            OUTPUT FORMAT (JSON ONLY - NO MARKDOWN, NO CODE BLOCKS):
+            Return ONLY valid JSON, no markdown formatting, no code blocks, no explanations before or after.
             {
                 "article": {
                     "claim": "...",
@@ -318,7 +319,6 @@ FORMATTING RULES:
                 model,
                 contents: prompt,
                 config: {
-                    responseMimeType: 'application/json',
                     tools: [{ googleSearch: {} }],
                     temperature: 0.2,
                 },
@@ -326,29 +326,80 @@ FORMATTING RULES:
 
             let text = response.text || '{}';
 
-            // Clean up markdown code blocks if present
-            text = text.replace(/```json\n?|\n?```/g, '').trim();
+            // Clean up markdown code blocks and any surrounding text
+            text = text
+                .replace(/```json\n?/gi, '')  // Remove opening json code block
+                .replace(/```\n?/g, '')       // Remove closing code blocks
+                .replace(/^[^{]*/, '')         // Remove any text before first {
+                .replace(/[^}]*$/, '')        // Remove any text after last }
+                .trim();
+
+            // Try to extract JSON if it's embedded in text
+            const jsonMatch = text.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+                text = jsonMatch[0];
+            }
 
             try {
                 return JSON.parse(text);
             } catch (parseError) {
                 console.error('JSON Parse Error:', parseError);
-                console.error('Raw AI Response:', text);
-                throw new Error('Failed to parse AI response. The AI might have returned invalid JSON.');
+                console.error('Raw AI Response:', response.text);
+                console.error('Cleaned text:', text);
+                throw new Error('Failed to parse AI response. The AI might have returned invalid JSON. Check backend logs for details.');
             }
 
         } catch (error) {
             console.error('Content generation failed:', error);
+            
+            // Log full error details for debugging
+            if (error instanceof Error) {
+                console.error('Error name:', error.name);
+                console.error('Error message:', error.message);
+                console.error('Error stack:', error.stack);
+            } else {
+                console.error('Error object:', JSON.stringify(error, null, 2));
+            }
 
             // Check for specific error types
             const errorMessage = error instanceof Error ? error.message : String(error);
+            const errorString = JSON.stringify(error).toLowerCase();
 
-            if (errorMessage.includes('429') || errorMessage.includes('quota') || errorMessage.includes('RESOURCE_EXHAUSTED')) {
+            // Check for quota/resource exhausted errors (more comprehensive check)
+            if (
+                errorMessage.includes('429') || 
+                errorMessage.includes('quota') || 
+                errorMessage.includes('RESOURCE_EXHAUSTED') ||
+                errorMessage.includes('resource_exhausted') ||
+                errorString.includes('quota') ||
+                errorString.includes('429') ||
+                errorString.includes('resource_exhausted')
+            ) {
                 throw new Error('Gemini API quota exceeded. Please check your API usage limits or try again later.');
             }
 
-            if (errorMessage.includes('401') || errorMessage.includes('403') || errorMessage.includes('API key')) {
+            // Check for authentication errors
+            if (
+                errorMessage.includes('401') || 
+                errorMessage.includes('403') || 
+                errorMessage.includes('API key') ||
+                errorMessage.includes('unauthorized') ||
+                errorMessage.includes('forbidden') ||
+                errorString.includes('401') ||
+                errorString.includes('403')
+            ) {
                 throw new Error('Invalid Gemini API key. Please check your GEMINI_API_KEY in .env file.');
+            }
+
+            // Check for model not found errors
+            if (
+                errorMessage.includes('not found') ||
+                errorMessage.includes('404') ||
+                errorMessage.includes('model') && errorMessage.includes('invalid') ||
+                errorString.includes('not found') ||
+                errorString.includes('404')
+            ) {
+                throw new Error('Gemini model not found. Please check the model name in the code.');
             }
 
             throw new Error('Failed to generate content: ' + errorMessage);

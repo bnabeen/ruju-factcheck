@@ -12,17 +12,31 @@ const pool = new Pool({
 
 async function runMigrations() {
     const client = await pool.connect();
+
     try {
         console.log('Running migrations...');
 
-        const migrationFile = path.join(__dirname, '001_initial_schema.sql');
-        const sql = fs.readFileSync(migrationFile, 'utf8');
+        // Path to the folder that contains .sql files
+        const migrationsDir = __dirname;
+
+        // Read all .sql files in alphabetical order
+        const migrationFiles = fs.readdirSync(migrationsDir)
+            .filter(file => file.endsWith('.sql'))
+            .sort(); // ensures 001_ runs before 002_
 
         await client.query('BEGIN');
-        await client.query(sql);
+
+        for (const file of migrationFiles) {
+            const fullPath = path.join(migrationsDir, file);
+            console.log(`Running: ${file}`);
+
+            const sql = fs.readFileSync(fullPath, 'utf8');
+            await client.query(sql);
+        }
+
         await client.query('COMMIT');
 
-        console.log('Migrations completed successfully');
+        console.log('All migrations completed successfully.');
     } catch (err) {
         await client.query('ROLLBACK');
         console.error('Migration failed:', err);

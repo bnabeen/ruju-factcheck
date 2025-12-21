@@ -137,7 +137,7 @@ const VerifyClaim: React.FC<VerifyClaimProps> = ({ lang = Language.EN }) => {
                 </div>
                 <div>
                   <h3 className="text-xl font-bold text-black mb-2">{t.claim_analysis}</h3>
-                  <p className="text-black leading-relaxed">{result.summary}</p>
+                  <div className="text-black font-medium" dangerouslySetInnerHTML={{ __html: result.summary }} />
                 </div>
               </div>
 
@@ -157,9 +157,10 @@ const VerifyClaim: React.FC<VerifyClaimProps> = ({ lang = Language.EN }) => {
 
               <div className="bg-white p-4 rounded-lg border border-black/10">
                 <h4 className="font-bold text-black mb-2">{t.reasoning}</h4>
-                <div className="prose max-w-none text-sm text-black whitespace-pre-wrap">
-                  {result.reasoning}
-                </div>
+                <div
+                  className="text-sm text-black whitespace-pre-wrap leading-relaxed"
+                  dangerouslySetInnerHTML={{ __html: result.reasoning }}
+                />
               </div>
             </div>
           </div>
