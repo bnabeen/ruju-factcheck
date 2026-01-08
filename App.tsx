@@ -1,21 +1,27 @@
 import React, { useState, useEffect } from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
+import { Language } from './types';
+
+// Layout imports
 import Layout from './components/Layout';
+import AdminLayout from './components/admin/AdminLayout';
+import ProtectedRoute from './components/admin/ProtectedRoute';
+
+// Public Page imports
 import Home from './pages/Home';
 import VerifyClaim from './pages/VerifyClaim';
 import VerifyMedia from './pages/VerifyMedia';
 import Feed from './pages/Feed';
 import Article from './pages/Article';
-import { About, Contact, SubmitClaim, Methodology, Team, Careers, Terms } from './pages/StaticPages';
+import { About, Contact, SubmitClaim, Methodology, Team, Careers, Terms, Privacy, MediaLiteracy } from './pages/StaticPages';
 import Donate from './pages/Donate';
-import AdminLayout from './components/admin/AdminLayout';
-import { Language } from './types';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { HelmetProvider } from 'react-helmet-async';
 
-// Admin imports
+// Admin Page imports
 import AdminLogin from './pages/admin/AdminLogin';
 import Dashboard from './pages/admin/Dashboard';
 import ArticleManager from './pages/admin/ArticleManager';
+import ArticleEditorPage from './pages/admin/ArticleEditorPage';
 import ClaimManager from './pages/admin/ClaimManager';
 import ContentManager from './pages/admin/ContentManager';
 import CareerManager from './pages/admin/CareerManager';
@@ -50,17 +56,26 @@ const App: React.FC = () => {
     <HelmetProvider>
       <BrowserRouter>
         <Routes>
-          {/* Admin Routes with nested Layout */}
+          {/* Admin Routes with nested Layout and Protection */}
           <Route path="/admin/login" element={<AdminLogin />} />
-          <Route path="/admin" element={<AdminLayout><Dashboard /></AdminLayout>} />
-          <Route path="/admin/articles" element={<AdminLayout><ArticleManager /></AdminLayout>} />
-          <Route path="/admin/claims" element={<AdminLayout><ClaimManager /></AdminLayout>} />
-          <Route path="/admin/content" element={<AdminLayout><ContentManager /></AdminLayout>} />
-          <Route path="/admin/careers" element={<AdminLayout><CareerManager /></AdminLayout>} />
-          <Route path="/admin/newsletter" element={<AdminLayout><NewsletterManager /></AdminLayout>} />
-          <Route path="/admin/users" element={<AdminLayout><UserManager /></AdminLayout>} />
-          <Route path="/admin/settings" element={<AdminLayout><SiteSettingsManager /></AdminLayout>} />
-          <Route path="/admin/content-ai" element={<AdminLayout><ContentAI /></AdminLayout>} />
+
+          <Route path="/admin" element={
+            <ProtectedRoute>
+              <AdminLayout />
+            </ProtectedRoute>
+          }>
+            <Route index element={<Dashboard />} />
+            <Route path="articles" element={<ArticleManager />} />
+            <Route path="articles/new" element={<ArticleEditorPage />} />
+            <Route path="articles/edit/:id" element={<ArticleEditorPage />} />
+            <Route path="claims" element={<ClaimManager />} />
+            <Route path="content" element={<ContentManager />} />
+            <Route path="careers" element={<CareerManager />} />
+            <Route path="newsletter" element={<NewsletterManager />} />
+            <Route path="users" element={<UserManager />} />
+            <Route path="settings" element={<SiteSettingsManager />} />
+            <Route path="content-ai" element={<ContentAI />} />
+          </Route>
 
           {/* Public Routes (With Layout) */}
           <Route path="*" element={
@@ -77,12 +92,11 @@ const App: React.FC = () => {
                 <Route path="/team" element={<Team lang={lang} />} />
                 <Route path="/careers" element={<Careers lang={lang} />} />
                 <Route path="/terms" element={<Terms lang={lang} />} />
+                <Route path="/privacy" element={<Privacy lang={lang} />} />
+                <Route path="/resources" element={<MediaLiteracy lang={lang} />} />
                 <Route path="/contact" element={<Contact lang={lang} />} />
                 <Route path="/submit" element={<SubmitClaim lang={lang} />} />
                 <Route path="/donate" element={<Donate lang={lang} />} />
-                {/* Fallback placeholders for other links */}
-                <Route path="/resources" element={<div className="p-20 text-center">Media Literacy Resources Coming Soon</div>} />
-                <Route path="/privacy" element={<div className="p-20 text-center">Privacy Policy Placeholder</div>} />
               </Routes>
             </Layout>
           } />

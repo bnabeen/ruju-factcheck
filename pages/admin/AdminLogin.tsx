@@ -9,6 +9,13 @@ const AdminLogin: React.FC = () => {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
+    React.useEffect(() => {
+        const token = localStorage.getItem('auth_token');
+        if (token) {
+            navigate('/admin');
+        }
+    }, [navigate]);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');

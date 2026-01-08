@@ -147,7 +147,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ content, onChange, plac
     return (
         <div className="border border-gray-300 rounded-lg overflow-hidden flex flex-col min-h-[500px] bg-white shadow-sm ring-1 ring-black/5 hover:ring-black/10 transition-shadow">
             {/* Toolbar - Sticky with shadow when active */}
-            <div className="bg-gray-50 border-b border-gray-300 p-2 flex flex-wrap gap-1 sticky top-0 z-20 shadow-sm backdrop-blur-sm bg-gray-50/90">
+            <div className="bg-gray-50 border-b border-gray-300 p-2 flex flex-wrap gap-1 sticky top-0 z-30 shadow-sm backdrop-blur-sm bg-gray-50/95">
                 <button
                     onClick={() => exec(e => e.toggleHeading({ level: 1 }))}
                     className={`p-2 rounded hover:bg-gray-200 transition-colors ${editor.isActive('heading', { level: 1 }) ? 'bg-gray-300 shadow-inner' : ''}`}

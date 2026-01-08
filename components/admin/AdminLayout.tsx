@@ -107,7 +107,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
 
             {/* Main Content */}
             <main className="flex-1 overflow-auto">
-                <div className="p-8">
+                <div className="p-4 sm:p-6 lg:p-8">
                     {children || <Outlet />}
                 </div>
             </main>

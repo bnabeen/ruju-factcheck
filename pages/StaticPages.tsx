@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Mail, MapPin, Phone, Shield, FileText, Users, Briefcase, Scale } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Mail, MapPin, Phone, Shield, FileText, Users, Briefcase, Scale, BookOpen, Lock } from 'lucide-react';
 import { Language } from '../types';
 import { TRANSLATIONS } from '../constants';
 import { api } from '../services/api';
@@ -11,30 +11,67 @@ interface PageProps {
 
 export const About: React.FC<PageProps> = ({ lang }) => {
   const t = TRANSLATIONS[lang].about;
+  const [content, setContent] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    const fetchContent = async () => {
+      try {
+        setLoading(true);
+        const data = await api.getPageContent('about');
+        setContent(data);
+        setError(false);
+      } catch (err) {
+        console.error('Failed to fetch about page content', err);
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchContent();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="max-w-3xl mx-auto px-4 py-16 bg-white">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="w-12 h-12 border-4 border-ruju-red border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-3xl mx-auto px-4 py-16 bg-white">
       <Helmet>
-        <title>{t.title} | RUJU FactCheck</title>
-        <meta name="description" content={t.lead} />
+        <title>{content?.title || t.title} | RUJU FactCheck</title>
+        <meta name="description" content={content?.meta_description || t.lead} />
       </Helmet>
-      <h1 className="text-4xl font-bold text-black mb-8 text-center">{t.title}</h1>
+      <h1 className="text-4xl font-bold text-black mb-8 text-center">{content?.title || t.title}</h1>
       <div className="prose prose-lg max-w-none text-black">
-        <p className="lead text-xl text-black font-medium border-l-4 border-ruju-red pl-4">{t.lead}</p>
-        <h3 className="text-black font-bold">{t.mission_title}</h3>
-        <p>{t.mission_desc}</p>
-        <h3 className="text-black font-bold">{t.method_title}</h3>
-        <ol>
-          {t.method_steps.map((step, index) => (
-            <li key={index}><strong className="text-black">{step.title}:</strong> {step.desc}</li>
-          ))}
-        </ol>
-        <div className="bg-white p-6 rounded-lg mt-8 flex items-start gap-4 border border-black/10 shadow-sm">
-          <Shield className="h-8 w-8 text-ruju-red flex-shrink-0" />
-          <div>
-            <h4 className="text-lg font-bold text-black mt-0">{t.trust_title}</h4>
-            <p className="mb-0 text-sm text-black">{t.trust_desc}</p>
-          </div>
-        </div>
+        {content?.content ? (
+          <div dangerouslySetInnerHTML={{ __html: content.content }} />
+        ) : error ? (
+          <>
+            <p className="lead text-xl text-black font-medium border-l-4 border-ruju-red pl-4">{t.lead}</p>
+            <h3 className="text-black font-bold">{t.mission_title}</h3>
+            <p>{t.mission_desc}</p>
+            <h3 className="text-black font-bold">{t.method_title}</h3>
+            <ol>
+              {t.method_steps.map((step, index) => (
+                <li key={index}><strong className="text-black">{step.title}:</strong> {step.desc}</li>
+              ))}
+            </ol>
+            <div className="bg-white p-6 rounded-lg mt-8 flex items-start gap-4 border border-black/10 shadow-sm">
+              <Shield className="h-8 w-8 text-ruju-red flex-shrink-0" />
+              <div>
+                <h4 className="text-lg font-bold text-black mt-0">{t.trust_title}</h4>
+                <p className="mb-0 text-sm text-black">{t.trust_desc}</p>
+              </div>
+            </div>
+          </>
+        ) : null}
       </div>
     </div>
   );
@@ -341,8 +378,47 @@ export const Team: React.FC<PageProps> = ({ lang }) => {
 
 export const Careers: React.FC<PageProps> = ({ lang }) => {
   const t = TRANSLATIONS[lang].careers;
+  const [jobs, setJobs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    const fetchJobs = async () => {
+      try {
+        setLoading(true);
+        const data = await api.getCareers();
+        setJobs(data.filter((job: any) => job.is_active !== false));
+        setError(false);
+      } catch (err) {
+        console.error('Failed to fetch careers', err);
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchJobs();
+  }, []);
+
+  const getJobTypeLabel = (type: string) => {
+    switch (type) {
+      case 'full-time': return 'Full Time';
+      case 'part-time': return 'Part Time';
+      case 'internship': return 'Internship';
+      default: return type;
+    }
+  };
+
+  const getJobTypeColor = (type: string) => {
+    switch (type) {
+      case 'full-time': return 'bg-blue-100 text-blue-800';
+      case 'part-time': return 'bg-purple-100 text-purple-800';
+      case 'internship': return 'bg-green-100 text-green-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
   return (
-    <div className="max-w-3xl mx-auto px-4 py-16 bg-white">
+    <div className="max-w-4xl mx-auto px-4 py-16 bg-white">
       <Helmet>
         <title>{t.title} | RUJU FactCheck</title>
         <meta name="description" content={t.intro} />
@@ -355,10 +431,76 @@ export const Careers: React.FC<PageProps> = ({ lang }) => {
         <p className="text-xl text-gray-600">{t.intro}</p>
       </div>
 
-      <div className="bg-white p-8 rounded-xl border border-black/10 shadow-sm mb-8">
-        <h2 className="text-2xl font-bold text-black mb-4">{t.openings_title}</h2>
-        <p className="text-gray-700 italic">{t.no_openings}</p>
-      </div>
+      {loading ? (
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="w-12 h-12 border-4 border-ruju-red border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      ) : error ? (
+        <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
+          <p className="text-red-700 font-medium">Failed to load job listings. Please try again later.</p>
+        </div>
+      ) : jobs.length > 0 ? (
+        <div className="space-y-6 mb-8">
+          <h2 className="text-2xl font-bold text-black mb-6">{t.openings_title}</h2>
+          {jobs.map((job) => (
+            <div key={job.id} className="bg-white p-6 rounded-xl border border-black/10 shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold text-black mb-2">{job.title}</h3>
+                  <div className="flex flex-wrap gap-3 text-sm text-gray-600 mb-3">
+                    {job.department && (
+                      <span className="flex items-center gap-1">
+                        <Briefcase size={14} />
+                        {job.department}
+                      </span>
+                    )}
+                    {job.location && (
+                      <span className="flex items-center gap-1">
+                        <MapPin size={14} />
+                        {job.location}
+                      </span>
+                    )}
+                    {job.type && (
+                      <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getJobTypeColor(job.type)}`}>
+                        {getJobTypeLabel(job.type)}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+              {job.description && (
+                <div className="prose prose-sm max-w-none text-gray-700 mb-4">
+                  <div dangerouslySetInnerHTML={{ __html: job.description }} />
+                </div>
+              )}
+              {(job.requirements || job.responsibilities) && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 text-sm">
+                  {job.requirements && (
+                    <div>
+                      <h4 className="font-bold text-black mb-2">Requirements</h4>
+                      <div className="prose prose-sm max-w-none text-gray-700" dangerouslySetInnerHTML={{ __html: job.requirements }} />
+                    </div>
+                  )}
+                  {job.responsibilities && (
+                    <div>
+                      <h4 className="font-bold text-black mb-2">Responsibilities</h4>
+                      <div className="prose prose-sm max-w-none text-gray-700" dangerouslySetInnerHTML={{ __html: job.responsibilities }} />
+                    </div>
+                  )}
+                </div>
+              )}
+              <button className="bg-ruju-red text-white px-6 py-2 rounded-lg font-bold hover:bg-black transition">
+                Apply Now
+              </button>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="bg-white p-8 rounded-xl border border-black/10 shadow-sm mb-8">
+          <h2 className="text-2xl font-bold text-black mb-4">{t.openings_title}</h2>
+          <p className="text-gray-700 italic">{t.no_openings}</p>
+        </div>
+      )}
 
       <div className="bg-gray-50 p-8 rounded-xl border border-gray-200">
         <h2 className="text-2xl font-bold text-black mb-4">{t.internship_title}</h2>
@@ -373,27 +515,186 @@ export const Careers: React.FC<PageProps> = ({ lang }) => {
 
 export const Terms: React.FC<PageProps> = ({ lang }) => {
   const t = TRANSLATIONS[lang].terms;
+  const [content, setContent] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    const fetchContent = async () => {
+      try {
+        setLoading(true);
+        const data = await api.getPageContent('terms');
+        setContent(data);
+        setError(false);
+      } catch (err) {
+        console.error('Failed to fetch terms page content', err);
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchContent();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="max-w-3xl mx-auto px-4 py-16 bg-white">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="w-12 h-12 border-4 border-ruju-red border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-3xl mx-auto px-4 py-16 bg-white">
       <Helmet>
-        <title>{t.title} | RUJU FactCheck</title>
-        <meta name="description" content={t.intro} />
+        <title>{content?.title || t.title} | RUJU FactCheck</title>
+        <meta name="description" content={content?.meta_description || t.intro} />
       </Helmet>
       <div className="text-center mb-12">
         <div className="inline-flex items-center justify-center p-3 bg-ruju-red/10 rounded-full mb-4">
           <Scale className="h-8 w-8 text-ruju-red" />
         </div>
-        <h1 className="text-4xl font-bold text-black mb-4">{t.title}</h1>
-        <p className="text-xl text-gray-600">{t.intro}</p>
+        <h1 className="text-4xl font-bold text-black mb-4">{content?.title || t.title}</h1>
+        <p className="text-xl text-gray-600">{content?.meta_description || t.intro}</p>
       </div>
 
-      <div className="space-y-8">
-        {t.sections.map((section, index) => (
-          <div key={index}>
-            <h3 className="text-xl font-bold text-black mb-2">{section.title}</h3>
-            <p className="text-gray-700 leading-relaxed">{section.content}</p>
+      <div className="prose prose-lg max-w-none text-black">
+        {content?.content ? (
+          <div dangerouslySetInnerHTML={{ __html: content.content }} />
+        ) : error ? (
+          <div className="space-y-8">
+            {t.sections.map((section, index) => (
+              <div key={index}>
+                <h3 className="text-xl font-bold text-black mb-2">{section.title}</h3>
+                <p className="text-gray-700 leading-relaxed">{section.content}</p>
+              </div>
+            ))}
           </div>
-        ))}
+        ) : null}
+      </div>
+    </div>
+  );
+};
+
+export const Privacy: React.FC<PageProps> = ({ lang }) => {
+  const [content, setContent] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    const fetchContent = async () => {
+      try {
+        setLoading(true);
+        const data = await api.getPageContent('privacy');
+        setContent(data);
+        setError(false);
+      } catch (err) {
+        console.error('Failed to fetch privacy page content', err);
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchContent();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="max-w-3xl mx-auto px-4 py-16 bg-white">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="w-12 h-12 border-4 border-ruju-red border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-3xl mx-auto px-4 py-16 bg-white">
+      <Helmet>
+        <title>{content?.title || 'Privacy Policy'} | RUJU FactCheck</title>
+        <meta name="description" content={content?.meta_description || 'RUJU FactCheck Privacy Policy'} />
+      </Helmet>
+      <div className="text-center mb-12">
+        <div className="inline-flex items-center justify-center p-3 bg-ruju-red/10 rounded-full mb-4">
+          <Lock className="h-8 w-8 text-ruju-red" />
+        </div>
+        <h1 className="text-4xl font-bold text-black mb-4">{content?.title || 'Privacy Policy'}</h1>
+        {content?.meta_description && (
+          <p className="text-xl text-gray-600">{content.meta_description}</p>
+        )}
+      </div>
+
+      <div className="prose prose-lg max-w-none text-black">
+        {content?.content ? (
+          <div dangerouslySetInnerHTML={{ __html: content.content }} />
+        ) : error ? (
+          <div className="text-center py-12">
+            <p className="text-gray-600">Privacy policy content is being prepared. Please check back soon.</p>
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
+};
+
+export const MediaLiteracy: React.FC<PageProps> = ({ lang }) => {
+  const [content, setContent] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    const fetchContent = async () => {
+      try {
+        setLoading(true);
+        const data = await api.getPageContent('media-literacy');
+        setContent(data);
+        setError(false);
+      } catch (err) {
+        console.error('Failed to fetch media literacy page content', err);
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchContent();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="max-w-3xl mx-auto px-4 py-16 bg-white">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="w-12 h-12 border-4 border-ruju-red border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-3xl mx-auto px-4 py-16 bg-white">
+      <Helmet>
+        <title>{content?.title || 'Media Literacy'} | RUJU FactCheck</title>
+        <meta name="description" content={content?.meta_description || 'Media literacy resources and guides'} />
+      </Helmet>
+      <div className="text-center mb-12">
+        <div className="inline-flex items-center justify-center p-3 bg-ruju-red/10 rounded-full mb-4">
+          <BookOpen className="h-8 w-8 text-ruju-red" />
+        </div>
+        <h1 className="text-4xl font-bold text-black mb-4">{content?.title || 'Media Literacy'}</h1>
+        {content?.meta_description && (
+          <p className="text-xl text-gray-600">{content.meta_description}</p>
+        )}
+      </div>
+
+      <div className="prose prose-lg max-w-none text-black">
+        {content?.content ? (
+          <div dangerouslySetInnerHTML={{ __html: content.content }} />
+        ) : error ? (
+          <div className="text-center py-12">
+            <p className="text-gray-600">Media literacy resources are being prepared. Please check back soon.</p>
+          </div>
+        ) : null}
       </div>
     </div>
   );
