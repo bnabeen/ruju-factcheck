@@ -21,6 +21,9 @@ const Article: React.FC<ArticleProps> = ({ lang }) => {
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
 
+  // Share popup state
+  const [showSharePopup, setShowSharePopup] = useState(false);
+
   useEffect(() => {
     const fetchArticle = async () => {
       if (!slug) return;
@@ -40,6 +43,14 @@ const Article: React.FC<ArticleProps> = ({ lang }) => {
     };
     fetchArticle();
   }, [slug, lang]);
+
+  const handleShare = () => {
+    setShowSharePopup(true);
+  };
+
+  const closeSharePopup = () => {
+    setShowSharePopup(false);
+  };
 
   const handleSubscribe = async () => {
     if (!email) return;
@@ -75,6 +86,56 @@ const Article: React.FC<ArticleProps> = ({ lang }) => {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-10 sm:px-6 bg-white">
+      {/* Share Popup */}
+      {showSharePopup && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white rounded-lg shadow-lg p-8 min-w-[300px] relative">
+            <button
+              onClick={closeSharePopup}
+              className="absolute top-2 right-2 text-black text-xl font-bold"
+              aria-label="Close"
+            >
+              ×
+            </button>
+            <div className="text-lg font-bold mb-4">Share this article</div>
+            <div className="flex flex-col gap-4">
+              <a
+                href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full px-4 py-2 rounded bg-blue-600 text-white font-bold text-center hover:bg-blue-700 transition"
+              >
+                Share on Facebook
+              </a>
+              <a
+                href={`https://wa.me/?text=${encodeURIComponent(article.title + ' ' + window.location.href)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full px-4 py-2 rounded bg-green-500 text-white font-bold text-center hover:bg-green-600 transition"
+              >
+                Share on WhatsApp
+              </a>
+              <a
+                href={`https://x.com/intent/tweet?text=${encodeURIComponent(article.title)}&url=${encodeURIComponent(window.location.href)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full px-4 py-2 rounded bg-black text-white font-bold text-center hover:bg-gray-900 transition"
+              >
+                Share on X
+              </a>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(window.location.href);
+                  alert('Link copied to clipboard!');
+                }}
+                className="w-full px-4 py-2 rounded bg-gray-200 text-black font-bold text-center hover:bg-gray-300 transition"
+              >
+                Copy Link
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <Helmet>
         <title>{article.title} | RUJU FactCheck</title>
         <meta name="description" content={stripHtml(article.summary)} />
@@ -153,7 +214,7 @@ const Article: React.FC<ArticleProps> = ({ lang }) => {
           <div className="flex items-center justify-between border-t border-black/10 pt-8">
             <div className="font-bold text-black text-lg">{t.share_title}</div>
             <div className="flex gap-3">
-              <button className="flex items-center gap-2 px-4 py-2 rounded-full border border-black text-black font-bold hover:bg-black hover:text-white transition">
+              <button onClick={handleShare} className="flex items-center gap-2 px-4 py-2 rounded-full border border-black text-black font-bold hover:bg-black hover:text-white transition">
                 <Share2 className="h-4 w-4" /> {t.share_btn}
               </button>
             </div>

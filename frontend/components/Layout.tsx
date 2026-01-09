@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, Globe, Facebook, Twitter, Instagram, Youtube, Mail, ChevronDown } from 'lucide-react';
 import { Language } from '../types';
 import { TRANSLATIONS } from '../constants';
+import { api } from '../services/api';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -30,6 +31,8 @@ const TikTokIcon = ({ className }: { className?: string }) => (
 const Layout: React.FC<LayoutProps> = ({ children, lang, setLang }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isRujuAIOpen, setIsRujuAIOpen] = useState(false);
+  const [footerEmail, setFooterEmail] = useState('');
+  const [footerSubscribed, setFooterSubscribed] = useState(false);
   const t = TRANSLATIONS[lang];
   const location = useLocation();
 
@@ -38,6 +41,17 @@ const Layout: React.FC<LayoutProps> = ({ children, lang, setLang }) => {
 
   const toggleLang = () => {
     setLang(lang === Language.EN ? Language.NP : Language.EN);
+  };
+
+  const handleFooterSubscribe = async () => {
+    if (!footerEmail) return;
+    try {
+      await api.subscribeNewsletter(footerEmail);
+      setFooterSubscribed(true);
+      setFooterEmail('');
+    } catch (err) {
+      console.error('Failed to subscribe (footer)', err);
+    }
   };
 
   return (
@@ -205,12 +219,20 @@ const Layout: React.FC<LayoutProps> = ({ children, lang, setLang }) => {
               <input
                 type="email"
                 placeholder={t.footer.email_placeholder}
+                value={footerEmail}
+                onChange={(e) => setFooterEmail(e.target.value)}
                 className="bg-white border-none text-sm text-black p-2 rounded-none w-full focus:ring-0 placeholder:text-black/40"
               />
-              <button className="bg-ruju-red text-white px-4 hover:bg-black transition">
+              <button
+                onClick={handleFooterSubscribe}
+                className="bg-ruju-red text-white px-4 hover:bg-black transition"
+              >
                 <Mail className="h-4 w-4" />
               </button>
             </div>
+            {footerSubscribed && (
+              <div className="text-xs text-green-600 mt-2 font-bold">Subscribed!</div>
+            )}
           </div>
         </div>
         <div className="max-w-7xl mx-auto px-4 mt-8 pt-8 border-t border-black/10 text-center text-xs text-black/50">
