@@ -29,6 +29,8 @@ import NewsletterManager from './pages/admin/NewsletterManager';
 import UserManager from './pages/admin/UserManager';
 import SiteSettingsManager from './pages/admin/SiteSettingsManager';
 import ContentAI from './pages/admin/ContentAI';
+import VideoLinkPage from './pages/admin/VideoLinkPage';
+
 
 const App: React.FC = () => {
   // Initialize language from localStorage or default to Nepali
@@ -75,6 +77,8 @@ const App: React.FC = () => {
             <Route path="users" element={<UserManager />} />
             <Route path="settings" element={<SiteSettingsManager />} />
             <Route path="content-ai" element={<ContentAI />} />
+            <Route path="video-url" element={<VideoLinkPage />} />
+
           </Route>
 
           {/* Public Routes (With Layout) */}

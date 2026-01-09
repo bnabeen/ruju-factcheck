@@ -41,6 +41,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         { path: '/admin/users', icon: Users, label: 'Users' },
         { path: '/admin/settings', icon: Settings, label: 'Settings' },
         { path: '/admin/content-ai', icon: FileText, label: 'Ruju Content AI' },
+        { path: '/admin/video-url', icon: FileText, label: 'Video URL' },
     ];
 
     if (!user) return <div className="flex items-center justify-center h-screen">Loading...</div>;

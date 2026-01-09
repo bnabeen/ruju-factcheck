@@ -17,6 +17,8 @@ import careersRoutes from './routes/careers.routes';
 import uploadRoutes from './routes/upload.routes';
 import settingsRoutes from './routes/settings.routes';
 import contentGenRoutes from './routes/content-gen.routes';
+import videoUrlRoutes from './routes/videoUrl.routes';
+
 
 const app = express();
 
@@ -52,6 +54,7 @@ app.use('/api/careers', careersRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/ai-content', contentGenRoutes);
+app.use('/api/video-url', videoUrlRoutes);
 
 // 404 handler
 app.use((req, res) => {

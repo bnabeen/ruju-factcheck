@@ -309,6 +309,33 @@ export const api = {
         return res.json();
     },
 
+    // Video URLs (multiple)
+    getVideoUrls: async () => {
+        const res = await fetch('/api/video-url', {
+            headers: { 'Content-Type': 'application/json' }
+        });
+        if (!res.ok) throw new Error('Failed to fetch video URLs');
+        return res.json(); // returns array
+    },
+
+    addVideoUrl: async (url: string) => {
+        const res = await fetch('/api/video-url', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url }),
+        });
+        if (!res.ok) throw new Error('Failed to save video URL');
+        return res.json();
+    },
+
+    deleteVideoUrl: async (id: string) => {
+        const res = await fetch(`/api/video-url/${id}`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+        });
+        if (!res.ok) throw new Error('Failed to delete video URL');
+        return res.json();
+    },
     // AI Content Generation
     generateContent: async (claim: string) => {
         const res = await fetch(`${API_BASE_URL}/ai-content/generate-content`, {

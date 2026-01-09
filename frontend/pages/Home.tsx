@@ -7,6 +7,12 @@ import VerdictBadge from '../components/VerdictBadge';
 import HeroCarousel from '../components/HeroCarousel';
 import { api } from '../services/api';
 
+interface VideoUrl {
+  id: string;
+  url: string;
+  status?: number;
+}
+
 interface HomeProps {
   lang: Language;
 }
@@ -17,6 +23,19 @@ const Home: React.FC<HomeProps> = ({ lang }) => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [videoUrls, setVideoUrls] = useState<VideoUrl[]>([]);
+
+  useEffect(() => {
+    const fetchVideoUrls = async () => {
+      try {
+        const data = await api.getVideoUrls();
+        setVideoUrls(data);
+      } catch (error) {
+        console.error('Failed to fetch video URLs', error);
+      }
+    };
+    fetchVideoUrls();
+  }, []);
 
   useEffect(() => {
     const fetchArticles = async () => {
@@ -122,6 +141,8 @@ const Home: React.FC<HomeProps> = ({ lang }) => {
         </div>
       </section>
 
+
+
       {/* Latest Feed - White */}
       <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 bg-white">
         <div className="flex justify-between items-end mb-10 border-b border-black/10 pb-4">
@@ -164,6 +185,58 @@ const Home: React.FC<HomeProps> = ({ lang }) => {
           ))}
         </div>
       </section>
+
+      {/* Video Fact Checks Section */}
+      {videoUrls.length > 0 && (
+        <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 bg-white">
+          <div className="flex justify-between items-end mb-10 border-b border-black/10 pb-4">
+            <div>
+              <h2 className="text-3xl font-bold text-black">Video Fact Check</h2>
+              <p className="text-black/60 mt-2">Recent verifications from our editorial team.</p>
+            </div>
+            <a 
+              href="https://www.youtube.com/channel/UCEAYs8wXweK6bPlRN-J1Crg" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-ruju-red font-bold hover:text-black flex items-center gap-1 pb-1 transition"
+            >
+              View All <ArrowRight className="h-4 w-4" />
+            </a>
+          </div>
+          <div className="flex flex-col lg:flex-row gap-6 items-start">
+            {/* Main Video */}
+            <div className="flex-1 w-full">
+              <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+                <iframe
+                  src={videoUrls[0].url.replace('watch?v=', 'embed/')}
+                  title="Latest Video Fact Check"
+                  frameBorder="0"
+                  allowFullScreen
+                  className="absolute top-0 left-0 w-full h-full rounded-lg shadow-lg"
+                />
+              </div>
+            </div>
+            {/* Side Videos */}
+            {videoUrls.length > 1 && (
+              <div className="flex flex-row lg:flex-col gap-3 w-full lg:w-64 overflow-x-auto lg:overflow-x-visible">
+                {videoUrls.slice(1).map((v, idx) => (
+                  <div key={v.id} className="flex-shrink-0 lg:flex-shrink bg-white rounded-lg shadow-md border border-black/10 overflow-hidden hover:shadow-lg hover:border-ruju-red/30 transition-all duration-300 cursor-pointer group">
+                    <div className="relative w-64 lg:w-full" style={{ paddingBottom: '56.25%' }}>
+                      <iframe
+                        src={v.url.replace('watch?v=', 'embed/')}
+                        title={`Side Video ${idx + 1}`}
+                        frameBorder="0"
+                        allowFullScreen
+                        className="absolute top-0 left-0 w-full h-full"
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+      )}
 
       {/* How it works - White */}
       <section className="bg-white text-black py-24 border-t border-black/5">
