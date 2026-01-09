@@ -236,7 +236,7 @@ const Layout: React.FC<LayoutProps> = ({ children, lang, setLang }) => {
           </div>
         </div>
         <div className="max-w-7xl mx-auto px-4 mt-8 pt-8 border-t border-black/10 text-center text-xs text-black/50">
-          &copy; {new Date().getFullYear()} {t.footer.rights}
+          &copy; {new Date().getFullYear()} {t.footer.rights} | Site by <a href="https://devataai.carrd.co/#start" target="_blank" rel="noopener noreferrer" className="font-bold text-black hover:text-ruju-red transition">Devata Tech</a>
         </div>
       </footer>
     </div>
