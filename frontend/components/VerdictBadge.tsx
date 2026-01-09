@@ -14,22 +14,18 @@ const VerdictBadge: React.FC<VerdictBadgeProps> = ({ verdict, size = 'md' }) => 
 
   switch (verdict) {
     case VerdictType.TRUE:
-      // True: Black border/text (Clean/Minimal)
       colorClass = 'bg-white text-black border-black';
       Icon = CheckCircle;
       break;
     case VerdictType.FALSE:
-      // False: Red background, White text (Alert)
-      colorClass = 'bg-ruju-red text-white border-ruju-red';
+      colorClass = 'bg-white text-ruju-red border-ruju-red';
       Icon = XCircle;
       break;
     case VerdictType.MISLEADING:
-      // Misleading: Red border, Red text
       colorClass = 'bg-white text-ruju-red border-ruju-red';
       Icon = AlertTriangle;
       break;
     case VerdictType.UNVERIFIED:
-      // Unverified: Black Dashed border
       colorClass = 'bg-white text-black border-black border-dashed';
       Icon = HelpCircle;
       break;
@@ -42,7 +38,10 @@ const VerdictBadge: React.FC<VerdictBadgeProps> = ({ verdict, size = 'md' }) => 
   };
 
   return (
-    <span className={`inline-flex items-center rounded-full font-bold ${colorClass} ${sizeClasses[size]}`}>
+    <span
+      className={`inline-flex items-center rounded-full font-bold ${sizeClasses[size]} backdrop-blur-md shadow-md border border-white/40`} 
+      style={{ backgroundColor: 'rgba(255,255,255,0.35)' }}
+    >
       <Icon className={size === 'lg' ? 'w-5 h-5' : 'w-4 h-4'} />
       {verdict}
     </span>

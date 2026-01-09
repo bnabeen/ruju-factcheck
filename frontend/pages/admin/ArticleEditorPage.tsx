@@ -35,11 +35,46 @@ const ArticleEditorPage: React.FC = () => {
 
     const handleSubmit = async (formData: any) => {
         try {
+            // Convert structured content to content_en format
+            const content_en = `
+## The Claim
+
+${formData.claim_text || ''}
+
+${formData.claim_source_url ? `**Source:** ${formData.claim_source_url}` : ''}
+
+## Investigation
+
+${formData.investigation_text || ''}
+
+## Evidence
+
+${formData.evidence_text || ''}
+
+## Conclusion
+
+${formData.conclusion_text || ''}
+            `.trim();
+
+            // Prepare article data for backend
+            const articleData = {
+                title_en: formData.title_en,
+                title_np: formData.title_np || '',
+                summary_en: formData.summary_en,
+                summary_np: formData.summary_np || '',
+                content_en,
+                content_np: '', // Can be implemented later for bilingual support
+                verdict: formData.verdict,
+                status: 'PUBLISHED', // Auto-publish on submit
+                category: formData.category,
+                image_url: formData.image_url || '',
+            };
+
             if (id) {
-                await api.updateArticle(id, formData);
+                await api.updateArticle(id, articleData);
                 alert('Article updated successfully');
             } else {
-                await api.createArticle(formData);
+                await api.createArticle(articleData);
                 alert('Article created successfully');
             }
             navigate('/admin/articles');

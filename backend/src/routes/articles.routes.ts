@@ -5,6 +5,39 @@ import { authenticate, authorize, AuthRequest } from '../middleware/auth';
 
 const router = Router();
 
+// Helper function to generate slug from title
+function generateSlug(title: string): string {
+    return title
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
+        .replace(/\s+/g, '-') // Replace spaces with hyphens
+        .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
+        .substring(0, 100); // Limit length
+}
+
+// Helper function to ensure unique slug
+async function ensureUniqueSlug(baseSlug: string, existingId?: string): Promise<string> {
+    let slug = baseSlug;
+    let counter = 1;
+    
+    while (true) {
+        const query = existingId
+            ? 'SELECT id FROM articles WHERE slug = $1 AND id != $2'
+            : 'SELECT id FROM articles WHERE slug = $1';
+        const params = existingId ? [slug, existingId] : [slug];
+        
+        const result = await pool.query(query, params);
+        
+        if (result.rows.length === 0) {
+            return slug;
+        }
+        
+        slug = `${baseSlug}-${counter}`;
+        counter++;
+    }
+}
+
 // Get all articles (with optional language filter and pagination)
 router.get('/', async (req: Request, res: Response) => {
     try {
@@ -118,7 +151,7 @@ router.get('/:identifier', async (req: Request, res: Response) => {
 const articleSchema = Joi.object({
     title_en: Joi.string().required(),
     title_np: Joi.string().allow(''),
-    slug: Joi.string().required().pattern(/^[a-z0-9-]+$/).message('Slug must be lowercase, numbers, and hyphens only'),
+    slug: Joi.string().optional().pattern(/^[a-z0-9-]+$/).message('Slug must be lowercase, numbers, and hyphens only'),
     summary_en: Joi.string().required(),
     summary_np: Joi.string().allow(''),
     content_en: Joi.string().required(),
@@ -138,9 +171,18 @@ router.post('/', authenticate, authorize('admin', 'editor'), async (req: AuthReq
             return res.status(400).json({ error: error.details[0].message });
         }
 
-        const { title_en, title_np, slug, summary_en, summary_np, content_en, content_np, verdict, status, category, image_url } = value;
+        let { title_en, title_np, slug, summary_en, summary_np, content_en, content_np, verdict, status, category, image_url } = value;
         const author_id = value.author_id || req.user?.id;
         const published_at = status === 'PUBLISHED' ? new Date() : null;
+
+        // Auto-generate slug from title if not provided
+        if (!slug) {
+            const baseSlug = generateSlug(title_en);
+            slug = await ensureUniqueSlug(baseSlug);
+        } else {
+            // Ensure provided slug is unique
+            slug = await ensureUniqueSlug(slug);
+        }
 
         const result = await pool.query(
             `INSERT INTO articles (title_en, title_np, slug, summary_en, summary_np, content_en, content_np, verdict, status, category, image_url, author_id, published_at)
@@ -168,7 +210,7 @@ router.put('/:id', authenticate, authorize('admin', 'editor'), async (req: AuthR
             return res.status(400).json({ error: error.details[0].message });
         }
 
-        const { title_en, title_np, slug, summary_en, summary_np, content_en, content_np, verdict, status, category, image_url } = value;
+        let { title_en, title_np, slug, summary_en, summary_np, content_en, content_np, verdict, status, category, image_url } = value;
 
         // Check if article is being published for the first time
         const currentArticle = await pool.query('SELECT status, published_at FROM articles WHERE id = $1', [id]);
@@ -176,6 +218,15 @@ router.put('/:id', authenticate, authorize('admin', 'editor'), async (req: AuthR
 
         if (status === 'PUBLISHED' && !published_at) {
             published_at = new Date();
+        }
+
+        // Auto-generate slug from title if not provided
+        if (!slug) {
+            const baseSlug = generateSlug(title_en);
+            slug = await ensureUniqueSlug(baseSlug, id);
+        } else {
+            // Ensure provided slug is unique (excluding current article)
+            slug = await ensureUniqueSlug(slug, id);
         }
 
         const result = await pool.query(
