@@ -70,7 +70,7 @@ INSERT INTO site_settings (setting_key, setting_value) VALUES
         {"label": "Home", "url": "/", "label_np": "गृहपृष्ठ"},
         {"label": "Verify Claim", "url": "/verify", "label_np": "दाबी परीक्षण"},
         {"label": "Media Check", "url": "/media", "label_np": "मिडिया जाँच"},
-        {"label": "Latest Facts", "url": "/feed", "label_np": "ताजा तथ्य"},
+        {"label": "FactCheck", "url": "/feed", "label_np": "फ्याक्टचेक"},
         {"label": "Submit Claim", "url": "/submit", "label_np": "दाबी पेश"},
         {"label": "Donate", "url": "/donate", "label_np": "सहयोग"}
     ]

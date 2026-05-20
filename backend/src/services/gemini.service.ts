@@ -34,6 +34,38 @@ const mapNepaliDigits = (str: string): string => {
         .join('');
 };
 
+const DEFAULT_MODEL = 'gemini-2.0-flash';
+
+async function delay(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function callGeminiWithRetry(fn: () => Promise<any>, maxRetries = 3): Promise<any> {
+    let lastError: any;
+    for (let i = 0; i < maxRetries; i++) {
+        try {
+            return await fn();
+        } catch (error: any) {
+            lastError = error;
+            const errorMessage = error.message || String(error);
+            const isTransient = errorMessage.includes('503') || 
+                              errorMessage.includes('429') || 
+                              errorMessage.includes('high demand') ||
+                              errorMessage.includes('RESOURCE_EXHAUSTED') ||
+                              errorMessage.includes('UNAVAILABLE');
+            
+            if (isTransient && i < maxRetries - 1) {
+                const waitTime = Math.pow(2, i) * 1000 + Math.random() * 1000;
+                console.warn(`Gemini API busy (attempt ${i + 1}/${maxRetries}). Retrying in ${Math.round(waitTime)}ms...`);
+                await delay(waitTime);
+                continue;
+            }
+            throw error;
+        }
+    }
+    throw lastError;
+}
+
 export class GeminiService {
     static async verifyTextClaim(claim: string, lang: Language): Promise<AIAnalysisResult> {
         // Check if API key is configured
@@ -42,15 +74,13 @@ export class GeminiService {
         }
 
         try {
-            const model = 'gemini-2.5-flash';
-
             const languageInstruction =
                 lang === Language.NP
-                    ? 'CRITICAL: Respond entirely in Nepali language for the values (Summary, Reasoning, Verdict). The keys MUST remain in English. \\nFormat:\\nVerdict: [सत्य/असत्य/भ्रामक/अपुष्ट]\\nConfidence: [0-100]\\nSummary: [नेपालीमा एक वाक्यमा निष्कर्ष]\\nReasoning: [विस्तृत विश्लेषण ३-४ अनुच्छेदमा दिनुहोस्। यसमा दाबी के हो, विभिन्न समाचार स्रोतहरू (जस्तै कान्तिपुर, अनलाइनखबर आदि) ले के भनेका छन् (प्रकाशन मिति र मुख्य विवरण सहित), तथ्य जाँचको निष्कर्ष र अन्तिम निर्णय समावेश गर्नुहोस्।]'
-                    : 'Respond in English. Use these exact keys:\\nVerdict: [True/False/Misleading/Unverified]\\nConfidence: [0-100]\\nSummary: [One sentence conclusion]\\nReasoning: [Provide a detailed analysis in 3-4 paragraphs. Include: 1. The Claim (what is being said), 2. What News Sources Say (cite specific examples like Kantipur, OnlineKhabar with PUBLICATION DATES and specific details), 3. Findings (what the facts are), and 4. Conclusion.]';
+                    ? 'CRITICAL: Respond entirely in Nepali language for the values (Summary, Reasoning, Verdict). The keys MUST remain in English. \nFormat:\nVerdict: [सत्य/असत्य/भ्रामक/अपुष्ट]\nConfidence: [0-100]\nSummary: [नेपालीमा एक वाक्यमा निष्कर्ष]\nReasoning: [विस्तृत विश्लेषण ३-४ अनुच्छेदमा दिनुहोस्। यसमा दाबी के हो, विभिन्न समाचार स्रोतहरू (जस्तै कान्तिपुर, अनलाइनखबर आदि) ले के भनेका छन् (प्रकाशन मिति र मुख्य विवरण सहित), तथ्य जाँचको निष्कर्ष र अन्तिम निर्णय समावेश गर्नुहोस्।]'
+                    : 'Respond in English. Use these exact keys:\nVerdict: [True/False/Misleading/Unverified]\nConfidence: [0-100]\nSummary: [One sentence conclusion]\nReasoning: [Provide a detailed analysis in 3-4 paragraphs. Include: 1. The Claim (what is being said), 2. What News Sources Say (cite specific examples like Kantipur, OnlineKhabar with PUBLICATION DATES and specific details), 3. Findings (what the facts are), and 4. Conclusion.]';
 
-            const response = await ai.models.generateContent({
-                model,
+            const response = await callGeminiWithRetry(() => ai.models.generateContent({
+                model: DEFAULT_MODEL,
                 contents: `Fact check this claim relative to Nepal or global context: "${claim}". 
         ${languageInstruction}`,
                 config: {
@@ -58,7 +88,7 @@ export class GeminiService {
                     systemInstruction: `You are RUJU, a strict, source-constrained Fact-Checking AI...`,
                     temperature: 0,
                 },
-            });
+            }));
 
             const text = response.text || '';
             const groundingChunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
@@ -68,10 +98,7 @@ export class GeminiService {
                 .filter((s: any) => s !== null);
 
             // Parse response
-            const lines = text
-                .split('\n')
-                .map((l) => l.trim())
-                .filter((l) => l.length > 0);
+            const lines = text.split('\n');
 
             let verdict = VerdictType.UNVERIFIED;
             let confidence = 0;
@@ -147,18 +174,11 @@ export class GeminiService {
         }
 
         try {
-            const model = 'gemini-2.5-flash';
-
-            const languageInstruction =
-                lang === Language.NP
-                    ? 'CRITICAL: Respond entirely in Nepali language (Devanagari script).'
-                    : 'Respond in English.';
-
             const prompt = `You are RUJU, a Digital Forensic and Fact-Checking AI. Analyze this image for authenticity and manipulation.
 
 User Context: ${promptContext || 'Verify the authenticity of this image.'}
 
-${languageInstruction}
+CRITICAL: Respond entirely in ${lang === Language.NP ? 'Nepali language (Devanagari script)' : 'English'}.
 
 Provide a detailed analysis covering:
 
@@ -175,15 +195,15 @@ FORMATTING RULES:
 - Use plain text with clear numbered sections
 - Be concise and direct`;
 
-            const response = await ai.models.generateContent({
-                model,
+            const response = await callGeminiWithRetry(() => ai.models.generateContent({
+                model: DEFAULT_MODEL,
                 contents: {
                     parts: [{ inlineData: { mimeType: 'image/jpeg', data: base64Image } }, { text: prompt }],
                 },
                 config: {
                     temperature: 0,
                 },
-            });
+            }));
 
             const text = response.text || '';
 
@@ -272,7 +292,6 @@ FORMATTING RULES:
         }
 
         try {
-            const model = 'gemini-2.5-flash';
             const prompt = `
             You are RUJU, an expert fact-checking AI assistant.
             Generate comprehensive content in NEPALI language for the following claim: "${claim}".
@@ -315,14 +334,14 @@ FORMATTING RULES:
             }
             `;
 
-            const response = await ai.models.generateContent({
-                model,
+            const response = await callGeminiWithRetry(() => ai.models.generateContent({
+                model: DEFAULT_MODEL,
                 contents: prompt,
                 config: {
                     tools: [{ googleSearch: {} }],
                     temperature: 0.2,
                 },
-            });
+            }));
 
             let text = response.text || '{}';
 

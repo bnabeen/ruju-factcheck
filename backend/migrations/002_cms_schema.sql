@@ -52,7 +52,7 @@ CREATE INDEX IF NOT EXISTS idx_job_applications_status ON job_applications(statu
 
 -- Insert default content pages
 INSERT INTO site_content (slug, title, content, meta_description) VALUES
-('about', 'About RUJU', 'RUJU (meaning "Verification" in Nepali) is an independent initiative dedicated to combating misinformation in the digital age.', 'Learn about RUJU FactCheck mission and values'),
+('about', 'About RUJU FactCheck', 'RUJU (meaning "Verification" in Nepali) is an independent initiative dedicated to combating misinformation in the digital age.', 'Learn about RUJU FactCheck mission and values'),
 ('terms', 'Terms and Conditions', 'Please read these terms carefully before using our platform.', 'RUJU FactCheck Terms and Conditions'),
 ('privacy', 'Privacy Policy', 'We respect your privacy and are committed to protecting your personal data.', 'RUJU FactCheck Privacy Policy'),
 ('media-literacy', 'Media Literacy', 'Learn how to identify misinformation and verify claims yourself.', 'Media literacy resources and guides')

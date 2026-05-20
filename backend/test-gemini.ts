@@ -12,7 +12,7 @@ async function testGemini() {
         console.log('API Key present:', !!process.env.GEMINI_API_KEY);
 
         const response = await ai.models.generateContent({
-            model: 'gemini-2.0-flash-exp',
+            model: 'gemini-2.0-flash',
             contents: 'Say hello in JSON format with a "message" field',
             config: {
                 responseMimeType: 'application/json',

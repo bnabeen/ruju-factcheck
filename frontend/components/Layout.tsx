@@ -86,9 +86,11 @@ const Layout: React.FC<LayoutProps> = ({ children, lang, setLang }) => {
                 </div>
               </div>
 
+              <Link to="/video" className={isActive('/video')}>{t.nav.video}</Link>
+              <Link to="/reports" className={isActive('/reports')}>{t.nav.reports}</Link>
               <Link to="/feed" className={isActive('/feed')}>{t.nav.feed}</Link>
               <Link to="/about" className={isActive('/about')}>{t.nav.about}</Link>
-              <Link to="/donate" className={isActive('/donate')}>{t.nav.donate}</Link>
+              <Link to="/submit" className={isActive('/submit')}>{t.nav.submit}</Link>
 
               <button
                 onClick={toggleLang}
@@ -99,8 +101,8 @@ const Layout: React.FC<LayoutProps> = ({ children, lang, setLang }) => {
                 <span>{lang === Language.EN ? 'EN' : 'ने'}</span>
               </button>
 
-              <Link to="/submit" className="bg-ruju-red text-white px-6 py-2 rounded-full text-sm font-bold hover:bg-black transition shadow-lg transform hover:-translate-y-0.5">
-                {t.nav.submit}
+              <Link to="/donate" className="bg-ruju-red text-white px-6 py-2 rounded-full text-sm font-bold hover:bg-black transition shadow-lg transform hover:-translate-y-0.5">
+                {t.nav.donate}
               </Link>
             </div>
 
@@ -142,10 +144,13 @@ const Layout: React.FC<LayoutProps> = ({ children, lang, setLang }) => {
                 )}
               </div>
 
+              <Link to="/video" onClick={() => setIsMenuOpen(false)} className="block px-3 py-2 text-base font-medium text-black hover:bg-red-50 hover:text-ruju-red">{t.nav.video}</Link>
+              <Link to="/reports" onClick={() => setIsMenuOpen(false)} className="block px-3 py-2 text-base font-medium text-black hover:bg-red-50 hover:text-ruju-red">{t.nav.reports}</Link>
               <Link to="/feed" onClick={() => setIsMenuOpen(false)} className="block px-3 py-2 text-base font-medium text-black hover:bg-red-50 hover:text-ruju-red">{t.nav.feed}</Link>
-              <Link to="/donate" onClick={() => setIsMenuOpen(false)} className="block px-3 py-2 text-base font-medium text-black hover:bg-red-50 hover:text-ruju-red">{t.nav.donate}</Link>
+              <Link to="/about" onClick={() => setIsMenuOpen(false)} className="block px-3 py-2 text-base font-medium text-black hover:bg-red-50 hover:text-ruju-red">{t.nav.about}</Link>
+              <Link to="/submit" onClick={() => setIsMenuOpen(false)} className="block px-3 py-2 text-base font-medium text-black hover:bg-red-50 hover:text-ruju-red">{t.nav.submit}</Link>
               <div className="pt-2 mt-2 border-t border-black/10">
-                <Link to="/submit" onClick={() => setIsMenuOpen(false)} className="block px-3 py-2 text-base font-bold text-ruju-red">{t.nav.submit}</Link>
+                <Link to="/donate" onClick={() => setIsMenuOpen(false)} className="block px-3 py-2 text-base font-bold text-ruju-red">{t.nav.donate}</Link>
               </div>
             </div>
           </div>

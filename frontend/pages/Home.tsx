@@ -40,8 +40,8 @@ const Home: React.FC<HomeProps> = ({ lang }) => {
   useEffect(() => {
     const fetchArticles = async () => {
       try {
-        // Fetch latest 3 articles
-        const data = await api.getArticles(lang, 3);
+        // Fetch latest 4 articles for the featured + list layout
+        const data = await api.getArticles(lang, 4);
         setArticles(data);
       } catch (error) {
         console.error('Failed to load articles', error);
@@ -127,23 +127,17 @@ const Home: React.FC<HomeProps> = ({ lang }) => {
                   {lang === Language.EN ? 'Verify' : 'जाँच'} <ArrowRight className="h-5 w-5 hidden sm:inline" />
                 </button>
               </form>
-            </div>
-
-            {/* Latest Fact Checks Carousel */}
-            <HeroCarousel lang={lang} />
-
-            <div className="mt-12 flex flex-wrap justify-center gap-6 text-sm font-bold">
-              <span className="flex items-center gap-2 text-black/60"><Shield className="h-4 w-4 text-ruju-red" /> {t.hero.trust_ai}</span>
-              <span className="flex items-center gap-2 text-black/60"><Users className="h-4 w-4 text-ruju-red" /> {t.hero.trust_human}</span>
-              <span className="flex items-center gap-2 text-black/60"><Award className="h-4 w-4 text-ruju-red" /> {t.hero.trust_reg}</span>
-            </div>
+            </div>            
+            
+            {/* AI Disclaimer */}
+            <p className="text-sm text-black/50 text-center mt-4">
+              AI can make mistakes. <Link to="/contact" className="underline hover:text-ruju-red transition-colors">Report us</Link> if mistake detected.
+            </p>
           </div>
         </div>
       </section>
 
-
-
-      {/* Latest Feed - White */}
+      {/* Latest Fact Check - White */}
       <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 bg-white">
         <div className="flex justify-between items-end mb-10 border-b border-black/10 pb-4">
           <div>
@@ -154,35 +148,60 @@ const Home: React.FC<HomeProps> = ({ lang }) => {
             {t.home.view_all} <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
-
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {articles.map(article => (
-            <Link to={`/article/${article.slug}`} key={article.id} className="group block bg-white rounded-xl overflow-hidden border border-black/10 hover:shadow-xl hover:border-black/20 transition-all duration-300 hover:-translate-y-1">
-              <div className="relative h-52 bg-black/5 overflow-hidden">
-                <img src={article.imageUrl} alt={article.title} className="w-full h-full object-cover group-hover:scale-110 transition duration-700" />
-                <div className="absolute top-3 right-3">
-                  <VerdictBadge verdict={article.verdict} size="sm" />
+          {/* LEFT SIDE - Featured Fact Check */}
+          {articles[0] && (
+            <Link to={`/article/${articles[0].slug}`} className="md:col-span-2 group block bg-white rounded-2xl overflow-hidden border border-black hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 flex flex-col h-full">
+              <div className="relative aspect-video md:aspect-auto md:flex-grow bg-black/5 border-b border-black overflow-hidden">
+                <img src={articles[0].imageUrl} alt={articles[0].title} className="w-full h-full object-cover group-hover:scale-105 transition duration-700" />
+                <div className="absolute top-4 right-4">
+                  <VerdictBadge verdict={articles[0].verdict} size="md" />
                 </div>
               </div>
-              <div className="p-6">
-                <span className="text-xs font-bold text-ruju-red uppercase tracking-wider flex items-center gap-2 mb-2">
-                  <span className="w-2 h-2 rounded-full bg-ruju-red"></span>
-                  {article.category}
+              <div className="p-8 md:p-10 flex flex-col justify-center bg-white shrink-0">
+                <span className="inline-block border border-black rounded-full px-3 py-1 text-[10px] font-bold text-black uppercase tracking-wider mb-4 w-max">
+                  Fact Check
                 </span>
-                <h3 className="text-lg font-bold text-black group-hover:text-ruju-red line-clamp-2 leading-snug transition">
-                  {article.title}
+                <h3 className="text-2xl md:text-3xl font-bold text-black group-hover:text-ruju-red leading-snug transition mb-4 line-clamp-3">
+                  {articles[0].title}
                 </h3>
                 <div
-                  className="mt-3 text-black/70 text-sm line-clamp-3 leading-relaxed"
-                  dangerouslySetInnerHTML={{ __html: article.summary }}
+                  className="text-black/70 text-base line-clamp-2 leading-relaxed"
+                  dangerouslySetInnerHTML={{ __html: articles[0].summary }}
                 />
-                <div className="mt-5 pt-4 border-t border-black/5 text-xs text-black/50 flex justify-between items-center">
-                  <span className="flex items-center gap-1"><Users className="w-3 h-3" /> {article.author}</span>
-                  <span>{article.date}</span>
-                </div>
               </div>
             </Link>
-          ))}
+          )}
+
+          {/* RIGHT SIDE - Fact Check List */}
+          {articles.length > 1 && (
+            <div className="md:col-span-1 flex flex-col gap-4 h-full">
+              {articles.slice(1, 4).map((article) => (
+                <Link to={`/article/${article.slug}`} key={article.id} className="group block bg-white rounded-xl p-5 border border-black/10 hover:shadow-md hover:border-black/30 transition-all duration-300 flex-1 flex flex-col justify-center">
+                  <div className="flex justify-between items-start mb-2">
+                    <span className="inline-block border border-black/10 rounded-full px-2 py-0.5 text-[10px] font-bold text-black uppercase tracking-wider">
+                      Fact Check
+                    </span>
+                    <VerdictBadge verdict={article.verdict} size="sm" />
+                  </div>
+                  <div className="flex items-center justify-between gap-4 mt-2">
+                    <div className="flex-grow">
+                      <h4 className="text-sm md:text-base font-bold text-black group-hover:text-ruju-red line-clamp-2 leading-snug transition mb-1">
+                        {article.title}
+                      </h4>
+                      <div
+                        className="text-black/60 text-xs line-clamp-1 leading-relaxed"
+                        dangerouslySetInnerHTML={{ __html: article.summary }}
+                      />
+                    </div>
+                    <div className="text-black/30 group-hover:text-black group-hover:translate-x-1 transition-all duration-300 shrink-0">
+                      <ArrowRight className="h-5 w-5" />
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
@@ -203,32 +222,53 @@ const Home: React.FC<HomeProps> = ({ lang }) => {
               View All <ArrowRight className="h-4 w-4" />
             </a>
           </div>
-          <div className="flex flex-col lg:flex-row gap-6 items-start">
-            {/* Main Video */}
-            <div className="flex-1 w-full">
-              <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* LEFT SIDE - Featured Video */}
+            <div className="md:col-span-2 group block bg-white rounded-2xl overflow-hidden border border-black hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 flex flex-col h-full">
+              <div className="relative w-full aspect-video md:aspect-auto md:flex-grow bg-black/5 border-b border-black overflow-hidden">
                 <iframe
                   src={videoUrls[0].url.replace('watch?v=', 'embed/')}
                   title="Latest Video Fact Check"
                   frameBorder="0"
                   allowFullScreen
-                  className="absolute top-0 left-0 w-full h-full rounded-lg shadow-lg"
+                  className="absolute top-0 left-0 w-full h-full"
                 />
               </div>
+              <div className="p-8 md:p-10 flex flex-col justify-center bg-white shrink-0">
+                <span className="inline-block border border-black rounded-full px-3 py-1 text-[10px] font-bold text-black uppercase tracking-wider mb-4 w-max">
+                  Video Fact Check
+                </span>
+                <h3 className="text-2xl md:text-3xl font-bold text-black group-hover:text-ruju-red leading-snug transition mb-4 line-clamp-3">
+                  Featured Video Analysis
+                </h3>
+                <p className="text-black/70 text-base line-clamp-2 leading-relaxed">
+                  Watch our latest detailed video breakdown and forensic analysis from the RUJU editorial team.
+                </p>
+              </div>
             </div>
-            {/* Side Videos */}
+
+            {/* RIGHT SIDE - Video List */}
             {videoUrls.length > 1 && (
-              <div className="flex flex-row lg:flex-col gap-3 w-full lg:w-64 overflow-x-auto lg:overflow-x-visible">
-                {videoUrls.slice(1).map((v, idx) => (
-                  <div key={v.id} className="flex-shrink-0 lg:flex-shrink bg-white rounded-lg shadow-md border border-black/10 overflow-hidden hover:shadow-lg hover:border-ruju-red/30 transition-all duration-300 cursor-pointer group">
-                    <div className="relative w-64 lg:w-full" style={{ paddingBottom: '56.25%' }}>
-                      <iframe
-                        src={v.url.replace('watch?v=', 'embed/')}
-                        title={`Side Video ${idx + 1}`}
-                        frameBorder="0"
-                        allowFullScreen
-                        className="absolute top-0 left-0 w-full h-full"
-                      />
+              <div className="md:col-span-1 flex flex-col gap-4 h-full">
+                {videoUrls.slice(1, 4).map((v, idx) => (
+                  <div key={v.id} className="group flex flex-col bg-white rounded-xl p-5 border border-black/10 hover:shadow-md hover:border-black/30 transition-all duration-300 flex-1 justify-center cursor-pointer">
+                    <div className="flex justify-between items-start mb-2">
+                      <span className="inline-block border border-black/10 rounded-full px-2 py-0.5 text-[10px] font-bold text-black uppercase tracking-wider">
+                        Video Check
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between gap-4 mt-2">
+                      <div className="flex-grow">
+                        <h4 className="text-sm md:text-base font-bold text-black group-hover:text-ruju-red line-clamp-2 leading-snug transition mb-1">
+                          Fact Check Analysis {idx + 1}
+                        </h4>
+                        <div className="text-black/60 text-xs line-clamp-1 leading-relaxed">
+                          Click to watch the full video analysis
+                        </div>
+                      </div>
+                      <div className="text-black/30 group-hover:text-black group-hover:translate-x-1 transition-all duration-300 shrink-0">
+                        <ArrowRight className="h-5 w-5" />
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -237,49 +277,38 @@ const Home: React.FC<HomeProps> = ({ lang }) => {
           </div>
         </section>
       )}
+      {/* Support Us Section */}
+      <section className="py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="bg-black rounded-[1.5rem] p-6 md:p-8 lg:p-10 flex flex-col md:flex-row items-center gap-6 md:gap-10 overflow-hidden relative">
+          {/* Subtle Background Glow */}
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-ruju-red/20 blur-[120px] rounded-full pointer-events-none"></div>
 
-      {/* How it works - White */}
-      <section className="bg-white text-black py-24 border-t border-black/5">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-16 text-black">{t.home.how_title}</h2>
-
-          <div className="flex flex-col md:flex-row items-center justify-center gap-8 md:gap-4">
-
-            {/* Step 1 */}
-            <div className="bg-white border border-black/10 p-8 rounded-2xl shadow-lg w-full max-w-sm flex-1 hover:border-ruju-red/30 transition duration-300">
-              <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-6 border border-black/10 text-ruju-red">
-                <Search className="h-8 w-8" />
-              </div>
-              <h3 className="text-xl font-bold mb-4 text-black">{t.home.step1_title}</h3>
-              <p className="text-black/70 leading-relaxed text-sm">{t.home.step1_desc}</p>
+          {/* Left Side: Square Image Placeholder */}
+          <div className="w-full md:w-1/3 shrink-0 flex justify-center z-10">
+            <div className="w-32 h-32 md:w-48 md:h-48 bg-white/5 rounded-2xl border border-white/40 shadow-2xl flex items-center justify-center backdrop-blur-sm transition-transform duration-500 hover:scale-105">
+              <span className="text-white/40 text-[10px] font-bold tracking-widest uppercase flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-white/40"></span>
+                Illustration
+              </span>
             </div>
-
-            <div className="hidden md:block text-black/20">
-              <ArrowRight className="h-8 w-8" />
+          </div>
+          
+          {/* Right Side: Text & CTAs */}
+          <div className="w-full md:w-2/3 flex flex-col text-center md:text-left z-10">
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white tracking-tight mb-2">
+              Support Us
+            </h2>
+            <p className="text-white/70 text-sm md:text-base leading-relaxed mb-6 max-w-2xl font-light">
+              Description Short... Your support helps us continue our mission to combat misinformation and bring verified facts to the public. Join our community of truth-seekers.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center md:justify-start gap-3">
+              <Link to="/donate" className="px-6 py-2.5 bg-ruju-red hover:bg-red-700 text-white text-sm font-bold rounded-full transition-all duration-300 shadow-lg shadow-ruju-red/30 hover:shadow-xl hover:shadow-ruju-red/40 hover:-translate-y-1 w-full sm:w-auto text-center">
+                Donate
+              </Link>
+              <Link to="/membership" className="px-6 py-2.5 bg-transparent border border-white/30 hover:border-white hover:bg-white/10 text-white text-sm font-bold rounded-full transition-all duration-300 w-full sm:w-auto text-center hover:-translate-y-1">
+                Become a Member
+              </Link>
             </div>
-
-            {/* Step 2 */}
-            <div className="bg-white border border-black/10 p-8 rounded-2xl shadow-lg w-full max-w-sm flex-1 hover:border-ruju-red/30 transition duration-300">
-              <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-6 border border-black/10 text-ruju-red">
-                <Shield className="h-8 w-8" />
-              </div>
-              <h3 className="text-xl font-bold mb-4 text-black">{t.home.step2_title}</h3>
-              <p className="text-black/70 leading-relaxed text-sm">{t.home.step2_desc}</p>
-            </div>
-
-            <div className="hidden md:block text-black/20">
-              <ArrowRight className="h-8 w-8" />
-            </div>
-
-            {/* Step 3 */}
-            <div className="bg-white border border-black/10 p-8 rounded-2xl shadow-lg w-full max-w-sm flex-1 hover:border-ruju-red/30 transition duration-300">
-              <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-6 border border-black/10 text-ruju-red">
-                <Award className="h-8 w-8" />
-              </div>
-              <h3 className="text-xl font-bold mb-4 text-black">{t.home.step3_title}</h3>
-              <p className="text-black/70 leading-relaxed text-sm">{t.home.step3_desc}</p>
-            </div>
-
           </div>
         </div>
       </section>
